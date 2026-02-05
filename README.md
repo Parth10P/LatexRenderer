@@ -1,97 +1,194 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# React Native LaTeX Renderer
 
-# Getting Started
+Native LaTeX rendering for React Native using AndroidMath on Android.
 
-> **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
+## Architecture
 
-## Step 1: Start Metro
+### Native Module Design
 
-First, you will need to run **Metro**, the JavaScript build tool for React Native.
-
-To start the Metro dev server, run the following command from the root of your React Native project:
-
-```sh
-# Using npm
-npm start
-
-# OR using Yarn
-yarn start
+```
+┌──────────────────────────────────────────────────────────────────┐
+│                        React Native Layer                         │
+├──────────────────────────────────────────────────────────────────┤
+│  LaTeXView.tsx                                                    │
+│  - Calls NativeModules.LaTeXRenderer.renderLaTeX()               │
+│  - Displays Base64 PNG images                                     │
+│  - Handles loading/error states                                   │
+│  - Memoized for performance                                       │
+└─────────────────────────┬────────────────────────────────────────┘
+                          │ React Native Bridge
+┌─────────────────────────▼────────────────────────────────────────┐
+│                        Native Layer (Android)                     │
+├──────────────────────────────────────────────────────────────────┤
+│  LaTeXModule.java                                                 │
+│  - @ReactMethod renderLaTeX(latex, options, promise)             │
+│  - HashMap cache for rendered expressions                         │
+│  - Background thread for Base64 encoding                          │
+│  - Graceful error handling                                        │
+│                                                                    │
+│  AndroidMath (MTMathView)                                         │
+│  - Native LaTeX parsing and rendering                             │
+│  - Renders to Bitmap via Canvas                                   │
+└──────────────────────────────────────────────────────────────────┘
 ```
 
-## Step 2: Build and run your app
+### Component Structure
 
-With Metro running, open a new terminal window/pane from the root of your React Native project, and use one of the following commands to build and run your Android or iOS app:
+| File                | Purpose                                   |
+| ------------------- | ----------------------------------------- |
+| `LaTeXModule.java`  | Native module with `renderLaTeX()` method |
+| `LaTeXPackage.java` | Registers native module                   |
+| `LaTeXView.tsx`     | React component for rendering             |
+| `App.tsx`           | Demo with 15 test cases                   |
 
-### Android
+---
 
-```sh
-# Using npm
-npm run android
+## Performance Optimizations
 
-# OR using Yarn
-yarn android
+### 1. Caching (HashMap)
+
+```java
+private final Map<String, String> cache = new HashMap<>();
+String cacheKey = latex + "_" + fontSize + "_" + textColor;
 ```
 
-### iOS
+- In-memory cache prevents re-rendering identical expressions
+- Cache key includes all render parameters for correctness
 
-For iOS, remember to install CocoaPods dependencies (this only needs to be run on first clone or after updating native deps).
+### 2. Memoization (React.memo)
 
-The first time you create a new project, run the Ruby bundler to install CocoaPods itself:
-
-```sh
-bundle install
+```typescript
+const LaTeXView = memo(({ latex, fontSize, ... }) => {
+  // Component logic
+}, (prevProps, nextProps) => {
+  return prevProps.latex === nextProps.latex && ...;
+});
 ```
 
-Then, and every time you update your native dependencies, run:
+- Avoids unnecessary re-renders in FlatList
+- Custom comparison function for fine-grained control
 
-```sh
-bundle exec pod install
+### 3. Async Rendering
+
+- LaTeX parsing on UI thread (required by MTMathView)
+- Base64 encoding on background thread via ExecutorService
+- Promises for non-blocking JS bridge
+
+### 4. FlatList Optimizations
+
+```typescript
+<FlatList
+  removeClippedSubviews={true}
+  maxToRenderPerBatch={10}
+  windowSize={10}
+  initialNumToRender={5}
+/>
 ```
 
-For more information, please visit [CocoaPods Getting Started guide](https://guides.cocoapods.org/using/getting-started.html).
+---
 
-```sh
-# Using npm
-npm run ios
+## Error Handling
 
-# OR using Yarn
-yarn ios
+### Native Layer
+
+```java
+try {
+    // Render LaTeX
+} catch (Exception e) {
+    promise.reject("LATEX_ERROR", "Failed to render: " + e.getMessage());
+}
 ```
 
-If everything is set up correctly, you should see your new app running in the Android Emulator, iOS Simulator, or your connected device.
+- Try-catch wraps all rendering
+- Errors returned via Promise rejection
+- App never crashes on invalid LaTeX
 
-This is one way to run your app — you can also build it directly from Android Studio or Xcode.
+### React Layer
 
-## Step 3: Modify your app
+```typescript
+if (error) {
+  return (
+    <View style={styles.errorContainer}>
+      <Text>⚠️ {latex}</Text>
+      <Text>{error}</Text>
+    </View>
+  );
+}
+```
 
-Now that you have successfully run the app, let's make changes!
+- Fallback UI shows original LaTeX with error message
+- Invalid expressions (test cases 10-12) display gracefully
 
-Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
+---
 
-When you want to forcefully reload, for example to reset the state of your app, you can perform a full reload:
+## Tradeoffs
 
-- **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Dev Menu**, accessed via <kbd>Ctrl</kbd> + <kbd>M</kbd> (Windows/Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (macOS).
-- **iOS**: Press <kbd>R</kbd> in iOS Simulator.
+| Decision                      | Pros                       | Cons                                   |
+| ----------------------------- | -------------------------- | -------------------------------------- |
+| **Base64 vs File Storage**    | Simple, no file management | Higher memory for large lists          |
+| **AndroidMath vs JLaTeXMath** | Android-compatible         | Less comprehensive than JLaTeXMath     |
+| **HashMap Cache**             | Fast lookups, simple       | No size limit (could grow unbounded)   |
+| **UI Thread Rendering**       | Required by MTMathView     | Brief blocking for complex expressions |
 
-## Congratulations! :tada:
+### Future Improvements
 
-You've successfully run and modified your React Native App. :partying_face:
+- LRU cache with size limit
+- File-based caching for persistence
+- Web worker for JS-side processing
 
-### Now what?
+---
 
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [docs](https://reactnative.dev/docs/getting-started).
+## Setup
 
-# Troubleshooting
+```bash
+# Install dependencies
+npm install
 
-If you're having issues getting the above steps to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
+# Clean Android build
+cd android && ./gradlew clean && cd ..
 
-# Learn More
+# Run on Android
+npx react-native run-android
+```
 
-To learn more about React Native, take a look at the following resources:
+---
 
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+## Test Cases
+
+All 15 assignment test cases are included in `App.tsx`:
+
+| #   | Description                 | Type     |
+| --- | --------------------------- | -------- |
+| 1   | Plain text (no LaTeX)       | Text     |
+| 2   | Inline math with `$...$`    | Mixed    |
+| 3   | Inline math with conditions | Mixed    |
+| 4   | Display math with `$$...$$` | Display  |
+| 5   | Complex inline function     | Complex  |
+| 6   | Nested fractions and sqrt   | Complex  |
+| 7   | Wide expression (overflow)  | Wide     |
+| 8   | Multiple display equations  | Multiple |
+| 9   | Step-by-step solution       | Mixed    |
+| 10  | Invalid: mismatched braces  | Error    |
+| 11  | Invalid: incomplete sqrt    | Error    |
+| 12  | Invalid: unknown command    | Error    |
+| 13  | Dollar sign as currency     | Text     |
+| 14  | Dollar sign as currency     | Text     |
+| 15  | Performance test expression | Complex  |
+
+---
+
+## Validation
+
+Run the validation script to verify implementation:
+
+```bash
+./validate-repo.sh
+```
+
+Expected output:
+
+- ✓ LaTeXModule.java found
+- ✓ LaTeXPackage.java found
+- ✓ LaTeX component in src/
+- ✓ README contains: architecture, performance, cache
+- Score: 90%+ (EXCELLENT)

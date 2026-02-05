@@ -16,7 +16,6 @@ interface PerformanceTestScreenProps {
   onBack: () => void;
 }
 
-
 const TEST_CASE_15_CONTENT =
   'We now simplify $\\frac{(a_1 + a_2 + a_3 + \\cdots + a_n)^2}{\\sqrt{(b_1^2 + b_2^2 + \\cdots + b_n^2)(c_1^2 + c_2^2 + \\cdots + c_n^2)}}$ before proceeding further in the solution.';
 
