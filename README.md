@@ -4,21 +4,23 @@ A native Android module for rendering LaTeX mathematical expressions in React Na
 
 ---
 
-## 📹 Demo Video
+## Demo Video
 
 <!-- Add your demo video link here -->
-[**Watch Demo Video**](YOUR_VIDEO_LINK_HERE)
+
+[**Watch Demo Video**](https://drive.google.com/file/d/1XZvHC1wYCzb9SOYXU75V8v0MgNPE6R9g/view?usp=sharing)
 
 ---
 
-## 📱 Download APK
+## Download APK
 
 <!-- Add your APK download link here -->
-[**Download APK**](YOUR_APK_LINK_HERE)
+
+[**Download APK**](https://drive.google.com/file/d/1Kc2FRaRmKFKWz5q3eoWFxG4t1cA4gZSw/view?usp=sharing)
 
 ---
 
-## 📋 Overview
+## Overview
 
 This project is a **native Android implementation** for rendering LaTeX expressions in React Native. Unlike WebView-based solutions, this approach uses the **AndroidMath (MTMathView)** library for direct native rendering, resulting in better performance and smoother user experience.
 
@@ -26,24 +28,8 @@ This project is a **native Android implementation** for rendering LaTeX expressi
 
 - **Pure Native Rendering** - No WebView overhead
 - **Smooth Scrolling** - Optimized for FlatList with 50+ items
-- **Horizontal Scroll** - Long equations scroll horizontally without breaking layout
 - **Error Handling** - Graceful fallback for invalid LaTeX
 - **Interactive Playground** - Test LaTeX expressions in real-time
-- **Dark Mode Support** - Adapts to system theme
-
----
-
-## ✨ Features
-
-| Feature | Description |
-|---------|-------------|
-| 🚀 Native Rendering | Direct rendering using AndroidMath library |
-| 📜 Horizontal Scrolling | Long equations scroll within their container |
-| ⚠️ Error Handling | Invalid LaTeX shows warning instead of crashing |
-| 🎨 Customizable | Adjustable font size and text color |
-| 🌙 Dark Mode | Full dark mode support |
-| ✏️ Playground | Interactive LaTeX editor with live preview |
-| 📊 Performance Test | Stress test with 50 repeated items |
 
 ---
 
@@ -98,7 +84,7 @@ This project is a **native Android implementation** for rendering LaTeX expressi
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-### Component Breakdown
+<!-- ### Component Breakdown
 
 #### Native Layer (Java)
 
@@ -114,7 +100,7 @@ This project is a **native Android implementation** for rendering LaTeX expressi
 |------|---------|
 | `LatexRenderer.tsx` | Main component using `requireNativeComponent`, includes validation and memoization |
 | `App.tsx` | Main app with test cases, playground, and content parsing |
-| `PerformanceTestScreen.tsx` | 50-item FlatList for performance testing |
+| `PerformanceTestScreen.tsx` | 50-item FlatList for performance testing | -->
 
 ### Data Flow
 
@@ -150,6 +136,7 @@ This project is a **native Android implementation** for rendering LaTeX expressi
 
 ---
 
+<!-- <!--
 ## 🔧 Technical Decisions
 
 ### Why AndroidMath (MTMathView)?
@@ -186,9 +173,9 @@ This project is a **native Android implementation** for rendering LaTeX expressi
 **Selected**: Bridge approach using `requireNativeComponent` because:
 - More documentation and community support
 - Sufficient performance for this use case
-- Simpler maintenance
+- Simpler maintenance -->
 
----
+--- -->
 
 ## 🔗 Native ↔ React Native Boundary
 
@@ -199,17 +186,17 @@ The native view is exposed to React Native using the standard ViewManager patter
 ```java
 // LatexViewManager.java
 public class LatexViewManager extends SimpleViewManager<NativeLatexView> {
-    
+
     @ReactProp(name = "latex")
     public void setLatex(NativeLatexView view, String latex) {
         view.setLatex(latex);
     }
-    
+
     @ReactProp(name = "fontSize", defaultFloat = 20f)
     public void setFontSize(NativeLatexView view, float fontSize) {
         view.setFontSize(fontSize);
     }
-    
+
     @ReactProp(name = "textColor")
     public void setTextColor(NativeLatexView view, String color) {
         view.setTextColor(Color.parseColor(color));
@@ -219,13 +206,14 @@ public class LatexViewManager extends SimpleViewManager<NativeLatexView> {
 
 ```typescript
 // LatexRenderer.tsx
-const NativeLatexView = requireNativeComponent<NativeLatexViewProps>('NativeLatexView');
+const NativeLatexView =
+  requireNativeComponent<NativeLatexViewProps>('NativeLatexView');
 
 <NativeLatexView
   latex={cleanLatex}
   fontSize={fontSize}
   textColor={textColor}
-/>
+/>;
 ```
 
 ### View Lifecycle Handling
@@ -238,7 +226,7 @@ One key challenge was handling React Native Fabric's measurement timing:
 protected void onAttachedToWindow() {
     super.onAttachedToWindow();
     isAttached = true;
-    
+
     if (pendingLatex != null) {
         // Render queued LaTeX after view is attached
         handler.postDelayed(() -> renderLatex(pendingLatex), 100);
@@ -266,10 +254,10 @@ protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED),
         MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED)
     );
-    
+
     int mathWidth = mathView.getMeasuredWidth();
     int mathHeight = mathView.getMeasuredHeight();
-    
+
     // Report dimensions to Yoga layout system
     setMeasuredDimension(
         resolveSize(mathWidth, widthMeasureSpec),
@@ -284,13 +272,13 @@ protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
 
 ### Optimizations Implemented
 
-| Optimization | Implementation | Impact |
-|--------------|----------------|--------|
-| **React.memo()** | Wraps LatexRenderer component | Prevents unnecessary re-renders |
-| **minHeight/minWidth** | Calculated from fontSize and content length | Reserves space before render completes |
-| **FlatList Optimizations** | `removeClippedSubviews`, `maxToRenderPerBatch`, `windowSize` | Smooth scrolling with many items |
-| **Pending LaTeX Queue** | Queues rendering until view is attached | Prevents race conditions |
-| **postDelayed Rendering** | 100ms delay after attachment | Ensures view hierarchy is ready |
+| Optimization               | Implementation                                               | Impact                                 |
+| -------------------------- | ------------------------------------------------------------ | -------------------------------------- |
+| **React.memo()**           | Wraps LatexRenderer component                                | Prevents unnecessary re-renders        |
+| **minHeight/minWidth**     | Calculated from fontSize and content length                  | Reserves space before render completes |
+| **FlatList Optimizations** | `removeClippedSubviews`, `maxToRenderPerBatch`, `windowSize` | Smooth scrolling with many items       |
+| **Pending LaTeX Queue**    | Queues rendering until view is attached                      | Prevents race conditions               |
+| **postDelayed Rendering**  | 100ms delay after attachment                                 | Ensures view hierarchy is ready        |
 
 ### FlatList Configuration
 
@@ -305,34 +293,34 @@ protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
 
 ### Performance Results
 
-| Metric | Result |
-|--------|--------|
-| Scroll Performance | 60 FPS with 50 items |
-| Initial Render | ~100-200ms per equation |
-| Re-render (same LaTeX) | Skipped (cached check) |
-| Memory Usage | Stable with FlatList recycling |
+| Metric                 | Result                         |
+| ---------------------- | ------------------------------ |
+| Scroll Performance     | 60 FPS with 50 items           |
+| Initial Render         | ~100-200ms per equation        |
+| Re-render (same LaTeX) | Skipped (cached check)         |
+| Memory Usage           | Stable with FlatList recycling |
 
 ---
 
-## ⚖️ Trade-offs & Limitations
+## Trade-offs & Limitations
 
 ### Architectural Trade-offs
 
-| Decision | What We Chose | What We Sacrificed | Why |
-|----------|---------------|-------------------|-----|
-| Native View vs Bitmap | Native View | Simpler caching | Better quality and real-time rendering |
-| Bridge vs JSI | Bridge | Sync communication | Simpler implementation, sufficient perf |
-| Single Library | AndroidMath | Broader LaTeX support | Good balance of features and simplicity |
-| Horizontal Scroll | HorizontalScrollView | Fixed-width layout | Long equations remain usable |
+| Decision              | What We Chose        | What We Sacrificed    | Why                                     |
+| --------------------- | -------------------- | --------------------- | --------------------------------------- |
+| Native View vs Bitmap | Native View          | Simpler caching       | Better quality and real-time rendering  |
+| Bridge vs JSI         | Bridge               | Sync communication    | Simpler implementation, sufficient perf |
+| Single Library        | AndroidMath          | Broader LaTeX support | Good balance of features and simplicity |
+| Horizontal Scroll     | HorizontalScrollView | Fixed-width layout    | Long equations remain usable            |
 
 ### Known Limitations
 
-| Limitation | Impact | Potential Solution |
-|------------|--------|-------------------|
-| **Android Only** | No iOS support | Would need iOS native module with iosMath |
-| **LaTeX Coverage** | Some advanced commands not supported | MTMathView limitation |
-| **Horizontal Overflow** | Long equations require scrolling | By design for usability |
-| **Render Timing** | 100ms delay for reliability | Could optimize with better lifecycle handling |
+| Limitation              | Impact                               | Potential Solution                            |
+| ----------------------- | ------------------------------------ | --------------------------------------------- |
+| **Android Only**        | No iOS support                       | Would need iOS native module with iosMath     |
+| **LaTeX Coverage**      | Some advanced commands not supported | MTMathView limitation                         |
+| **Horizontal Overflow** | Long equations require scrolling     | By design for usability                       |
+| **Render Timing**       | 100ms delay for reliability          | Could optimize with better lifecycle handling |
 
 ### Future Improvements
 
@@ -376,126 +364,16 @@ cd android
 
 APK location: `android/app/build/outputs/apk/release/app-release.apk`
 
-### Native Module Setup (if adding to existing project)
-
-1. **Add AndroidMath dependency** to `android/app/build.gradle`:
-
-```groovy
-dependencies {
-    implementation('com.github.gregcockroft:AndroidMath:v1.1.0') {
-        exclude group: 'com.google.guava', module: 'guava'
-    }
-}
-```
-
-2. **Add JitPack repository** to `android/settings.gradle`:
-
-```groovy
-dependencyResolutionManagement {
-    repositories {
-        maven { url 'https://jitpack.io' }
-    }
-}
-```
-
-3. **Copy native files** to `android/app/src/main/java/com/yourapp/latex/`:
-   - `NativeLatexView.java`
-   - `LatexViewManager.java`
-   - `LatexPackage.java`
-
-4. **Register package** in `MainApplication.kt`:
-
-```kotlin
-override fun getPackages() = PackageList(this).packages.apply {
-    add(LatexPackage())
-}
-```
-
 ---
 
-## 📖 Usage
-
-### Basic Example
-
-```typescript
-import LatexRenderer from './src/components/LatexRenderer';
-
-<LatexRenderer 
-  latex="E = mc^2" 
-  fontSize={24}
-  textColor="#000000"
-/>
-```
-
-### With Error Handling
-
-```typescript
-<LatexRenderer 
-  latex="\frac{a}{b}"
-  fontSize={30}
-  textColor="#333333"
-  showErrorInline={true}
-  onError={(error) => console.log('LaTeX Error:', error)}
-/>
-```
-
-### Parsing Mixed Content
-
-The app includes a `parseContent()` function that extracts LaTeX from text:
-
-```typescript
-// Input: "The area is $A = \pi r^2$ for a circle."
-// Parses into:
-// - Text: "The area is "
-// - LaTeX: "A = \pi r^2" (inline)
-// - Text: " for a circle."
-```
-
-### Display vs Inline Mode
+<!-- ### Display vs Inline Mode
 
 - **Inline**: `$...$` - Smaller, flows with text
-- **Display**: `$$...$$` - Larger, centered on own line
+- **Display**: `$$...$$` - Larger, centered on own line -->
 
 ---
 
-## 🧪 Testing
-
-### Test Cases Covered
-
-| # | Test Case | Status |
-|---|-----------|--------|
-| 1 | Plain text (no LaTeX) | ✅ |
-| 2 | Inline math with fractions | ✅ |
-| 3 | Multiple inline expressions | ✅ |
-| 4 | Display math ($$...$$) | ✅ |
-| 5 | Complex fractions | ✅ |
-| 6 | Nested expressions | ✅ |
-| 7 | Very long expressions | ✅ |
-| 8 | Trigonometric functions | ✅ |
-| 9 | Step-by-step solution | ✅ |
-| 10 | Invalid LaTeX (unclosed brace) | ✅ |
-| 11 | Invalid LaTeX (incomplete sqrt) | ✅ |
-| 12 | Unsupported command | ✅ |
-| 13 | Plain dollar sign ($500) | ✅ |
-| 14 | Plain dollar sign ($1000) | ✅ |
-| 15 | Complex nested fractions | ✅ |
-
-### Running Tests
-
-```bash
-# Run unit tests
-npm test
-
-# Run on device/emulator
-npm run android
-
-# Build release for testing
-cd android && ./gradlew assembleRelease
-```
-
----
-
-## 🚨 Error Handling
+## Error Handling
 
 ### Validation (JavaScript Side)
 
@@ -508,10 +386,10 @@ const validateLatex = (latex: string): string | null => {
     if (char === '}') braceCount--;
     if (braceCount < 0) return 'Mismatched braces';
   }
-  
+
   // Check incomplete commands
   if (/\\frac\s*$/.test(latex)) return 'Incomplete \\frac';
-  
+
   return null; // Valid
 };
 ```
@@ -542,25 +420,25 @@ Invalid LaTeX displays a warning banner instead of crashing:
 
 ---
 
-## 📦 Dependencies
+## Dependencies
 
 ### Native (Android)
 
-| Dependency | Version | Purpose |
-|------------|---------|---------|
-| AndroidMath | v1.1.0 | LaTeX rendering via MTMathView |
+| Dependency  | Version | Purpose                        |
+| ----------- | ------- | ------------------------------ |
+| AndroidMath | v1.1.0  | LaTeX rendering via MTMathView |
 
 ### JavaScript
 
-| Dependency | Version | Purpose |
-|------------|---------|---------|
-| react | 19.2.0 | UI framework |
-| react-native | 0.83.1 | Mobile framework |
-| typescript | 5.8.3 | Type safety |
+| Dependency   | Version | Purpose          |
+| ------------ | ------- | ---------------- |
+| react        | 19.2.0  | UI framework     |
+| react-native | 0.83.1  | Mobile framework |
+| typescript   | 5.8.3   | Type safety      |
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 LatexRenderer/
@@ -599,8 +477,3 @@ LatexRenderer/
 This project is created as an internship assignment.
 
 ---
-
-## 🙏 Acknowledgments
-
-- [AndroidMath](https://github.com/gregcockroft/AndroidMath) - Native LaTeX rendering library
-- [React Native](https://reactnative.dev/) - Mobile framework
