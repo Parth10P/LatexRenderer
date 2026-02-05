@@ -68,4 +68,6 @@ export const LATEX_EQUATIONS = [
   '\\arg(z) = \\arctan\\left(\\frac{b}{a}\\right)',
 
   '\\left(a_1 + a_2 + a_3 + a_4 + a_5 + a_6 + \\cdots + a_n \\right)^2',
+  'A = \\int_a^b f(x)\\,dx',
+  '\\frac{(a_1 + a_2 + a_3 + \\cdots + a_n)^2}{\\sqrt{(b_1^2 + b_2^2 + \\cdots + b_n^2)(c_1^2 + c_2^2 + \\cdots + c_n^2)}}',
 ];
