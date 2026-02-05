@@ -185,11 +185,7 @@ const ContentRenderer = ({
     <View style={styles.contentContainer}>
       {parts.map((part, index) => {
         if (part.type === 'text') {
-          return (
-            <Text key={index} style={[styles.text, { color: textColor }]}>
-              {part.content}
-            </Text>
-          );
+          return null;
         } else {
           return (
             <LatexRenderer
