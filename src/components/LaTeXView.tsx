@@ -1,16 +1,3 @@
-/**
- * LaTeXView Component
- *
- * React Native component that renders LaTeX using native Android module.
- * Uses Base64-encoded PNG images for display.
- *
- * Features:
- * - Native rendering via LaTeXModule
- * - In-memory caching for performance
- * - Loading and error states
- * - Memoization to prevent unnecessary re-renders
- */
-
 import React, { useEffect, useState, memo } from 'react';
 import {
   View,
@@ -25,32 +12,15 @@ import {
 const { LaTeXRenderer } = NativeModules;
 
 interface LaTeXViewProps {
-  /** The LaTeX string to render */
+
   latex: string;
-  /** Font size for rendering (default: 20) */
   fontSize?: number;
-  /** Text color as hex string (default: "#000000") */
   textColor?: string;
-  /** Maximum width for the rendered expression */
   maxWidth?: number;
-  /** Optional style for the container */
   style?: ViewStyle;
-  /** Callback when an error occurs */
   onError?: (error: string) => void;
 }
 
-/**
- * LaTeXView - Renders LaTeX expressions using native Android module.
- *
- * @example
- * ```tsx
- * <LaTeXView
- *   latex="x = \frac{-b \pm \sqrt{b^2-4ac}}{2a}"
- *   fontSize={24}
- *   textColor="#333333"
- * />
- * ```
- */
 const LaTeXView: React.FC<LaTeXViewProps> = memo(
   ({
     latex,
@@ -118,7 +88,6 @@ const LaTeXView: React.FC<LaTeXViewProps> = memo(
       };
     }, [latex, fontSize, textColor, maxWidth, onError]);
 
-    // Loading state
     if (loading) {
       return (
         <View style={[styles.container, style]}>
@@ -127,7 +96,6 @@ const LaTeXView: React.FC<LaTeXViewProps> = memo(
       );
     }
 
-    // Error state
     if (error) {
       return (
         <View style={[styles.errorContainer, style]}>
@@ -140,7 +108,6 @@ const LaTeXView: React.FC<LaTeXViewProps> = memo(
       );
     }
 
-    // No image state
     if (!imageUri) {
       return (
         <View style={[styles.container, style]}>
@@ -148,8 +115,6 @@ const LaTeXView: React.FC<LaTeXViewProps> = memo(
         </View>
       );
     }
-
-    // Success state - display rendered image with proper sizing
     return (
       <View style={[styles.container, style]}>
         <Image
@@ -161,8 +126,8 @@ const LaTeXView: React.FC<LaTeXViewProps> = memo(
           resizeMode="contain"
           onLoad={event => {
             const { width, height } = event.nativeEvent.source;
-            // Use actual image dimensions, scaled down if needed
-            const maxW = 350; // Max width to fit screen
+
+            const maxW = 350; 
             const scale = width > maxW ? maxW / width : 1;
             setImageDimensions({
               width: Math.round(width * scale),
@@ -174,7 +139,6 @@ const LaTeXView: React.FC<LaTeXViewProps> = memo(
     );
   },
   (prevProps, nextProps) => {
-    // Custom comparison for memoization - only re-render if these props change
     return (
       prevProps.latex === nextProps.latex &&
       prevProps.fontSize === nextProps.fontSize &&
