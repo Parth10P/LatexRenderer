@@ -179,28 +179,41 @@ const ContentRenderer = ({
 }) => {
   const parts = parseContent(content);
 
+  // Combine all parts into a single LaTeX string for natural flow
+  let combinedLatex = '';
+
+  parts.forEach(part => {
+    if (part.type === 'text') {
+      // Escape special LaTeX characters
+      // We escape backslashes first, then other special chars
+      // We do NOT escape newlines here, we split by them
+      const escapeText = (text: string) =>
+        text.replace(/\\/g, '\\textbackslash ').replace(/([&%$#_{}])/g, '\\$1');
+
+      const lines = part.content.split('\n');
+
+      const latexLines = lines.map(line => {
+        // Skip empty lines if needed, or preserve them as empty \text{}
+        return `\\text{${escapeText(line)}}`;
+      });
+
+      // Join with LaTeX line break
+      combinedLatex += latexLines.join(' \\\\\\\\ ');
+    } else {
+      // For math parts, add them as-is
+      combinedLatex += part.content;
+    }
+  });
+
   return (
     <View style={styles.contentContainer}>
-      {parts.map((part, index) => {
-        if (part.type === 'text') {
-          return (
-            <Text key={index} style={[styles.text, { color: textColor }]}>
-              {part.content}
-            </Text>
-          );
-        } else {
-          return (
-            <LatexRenderer
-              key={index}
-              latex={part.content}
-              fontSize={part.display ? 50 : 50}
-              textColor={textColor}
-              style={part.display ? styles.displayMath : styles.inlineMath}
-              showErrorInline={true}
-            />
-          );
-        }
-      })}
+      <LatexRenderer
+        latex={combinedLatex}
+        fontSize={26} // Use inline size for the whole block for consistency
+        textColor={textColor}
+        style={styles.inlineMath} // Use inline style to allow wrapping
+        showErrorInline={true}
+      />
     </View>
   );
 };
@@ -383,8 +396,9 @@ const styles = StyleSheet.create({
   },
   inlineMath: {
     alignSelf: 'flex-start',
-    marginVertical: 24,
-    paddingVertical: 12,
+    marginVertical: 40, // Increased from 24 to 40 to prevent top overlap
+    paddingVertical: 20, // Increased from 12 to 20 for internal breathing room
+    marginBottom: 40, // Extra bottom margin to prevent overlapping with Source Code box
     minHeight: 50,
   },
   codeContainer: {
