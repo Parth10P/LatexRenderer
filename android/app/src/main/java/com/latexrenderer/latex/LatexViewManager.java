@@ -2,6 +2,7 @@ package com.latexrenderer.latex;
 
 import android.graphics.Color;
 import android.util.Log;
+import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -10,12 +11,16 @@ import com.agog.mathdisplay.MTMathView;
 import com.facebook.react.uimanager.SimpleViewManager;
 import com.facebook.react.uimanager.ThemedReactContext;
 import com.facebook.react.uimanager.annotations.ReactProp;
+import com.facebook.yoga.YogaMeasureFunction;
+import com.facebook.yoga.YogaMeasureMode;
+import com.facebook.yoga.YogaMeasureOutput;
+import com.facebook.yoga.YogaNode;
 
 /**
- * LatexViewManager - React Native ViewManager for MTMathView directly.
+ * LatexViewManager - React Native ViewManager for MTMathView.
  * 
  * This exposes the AndroidMath MTMathView directly to React Native
- * without wrapping it in a custom view.
+ * with proper measurement for Yoga layout system.
  */
 public class LatexViewManager extends SimpleViewManager<MTMathView> {
     
@@ -50,6 +55,15 @@ public class LatexViewManager extends SimpleViewManager<MTMathView> {
         } else {
             view.setLatex("");
         }
+        
+        // Force measure and layout update
+        view.measure(
+            View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
+            View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
+        );
+        
+        Log.d(TAG, "After measure: " + view.getMeasuredWidth() + "x" + view.getMeasuredHeight());
+        
         view.requestLayout();
         view.invalidate();
     }
