@@ -17,6 +17,7 @@ interface LatexRendererProps {
   showErrorInline?: boolean;
 }
 
+
 interface NativeLatexViewProps {
   latex: string;
   fontSize: number;
@@ -25,12 +26,14 @@ interface NativeLatexViewProps {
   onLatexError?: (event: { nativeEvent: { error: string } }) => void;
 }
 
+
 const NativeLatexView =
   Platform.OS === 'android'
     ? requireNativeComponent<NativeLatexViewProps>('NativeLatexView')
     : null;
 
 const validateLatex = (latex: string): string | null => {
+
   let braceCount = 0;
   for (const char of latex) {
     if (char === '{') braceCount++;
@@ -43,28 +46,21 @@ const validateLatex = (latex: string): string | null => {
     { pattern: /\\frac\s*$/i, msg: 'Incomplete \\frac command' },
     { pattern: /\\sqrt\s*$/i, msg: 'Incomplete \\sqrt command' },
     { pattern: /\\frac\s*\{[^}]*\}\s*$/i, msg: '\\frac needs two arguments' },
-    // Explicitly catch specific invalid commands for test cases or known issues
-    { pattern: /\\unknowncommand/i, msg: 'Invalid command \\unknowncommand' },
   ];
 
   for (const { pattern, msg } of incompleteCommands) {
     if (pattern.test(latex)) return msg;
   }
 
-  return null;
+  return null; 
 };
 
+
 const LatexRenderer: React.FC<LatexRendererProps> = memo(
-  ({
-    latex,
-    fontSize = 20,
-    textColor = '#000000',
-    style,
-    onError,
-    showErrorInline = false,
-  }) => {
+  ({ latex, fontSize = 20, textColor = '#000000', style, onError, showErrorInline = false }) => {
     const cleanLatex = React.useMemo(() => {
       let cleaned = latex.trim();
+
 
       if (cleaned.startsWith('\\[') && cleaned.endsWith('\\]')) {
         cleaned = cleaned.substring(2, cleaned.length - 2).trim();
@@ -73,6 +69,7 @@ const LatexRenderer: React.FC<LatexRendererProps> = memo(
       if (cleaned.startsWith('$$') && cleaned.endsWith('$$')) {
         cleaned = cleaned.substring(2, cleaned.length - 2).trim();
       }
+
       if (
         cleaned.startsWith('$') &&
         cleaned.endsWith('$') &&
@@ -84,15 +81,18 @@ const LatexRenderer: React.FC<LatexRendererProps> = memo(
       return cleaned;
     }, [latex]);
 
+
     const validationError = React.useMemo(() => {
       return validateLatex(cleanLatex);
     }, [cleanLatex]);
+
 
     React.useEffect(() => {
       if (validationError && onError) {
         onError(validationError);
       }
     }, [validationError, onError]);
+
 
     const handleNativeError = React.useCallback(
       (event: { nativeEvent: { error: string } }) => {
@@ -150,7 +150,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#666',
   },
-
+  // Error styles - compact inline display
   errorContainer: {
     flexDirection: 'row',
     alignItems: 'center',

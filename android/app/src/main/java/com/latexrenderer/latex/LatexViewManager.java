@@ -40,28 +40,18 @@ public class LatexViewManager extends SimpleViewManager<NativeLatexView> {
         return new NativeLatexView(reactContext);
     }
     
-    /**
-     * Set the LaTeX string to render.
-     */
     @ReactProp(name = "latex")
     public void setLatex(NativeLatexView view, @Nullable String latex) {
         Log.d(TAG, "setLatex: " + latex);
         view.setLatex(latex);
     }
     
-    /**
-     * Set the font size for rendering.
-     */
     @ReactProp(name = "fontSize", defaultFloat = 20f)
     public void setFontSize(NativeLatexView view, float fontSize) {
         Log.d(TAG, "setFontSize: " + fontSize);
         view.setFontSize(fontSize);
     }
     
-    /**
-     * Set the text color.
-     * Accepts a color string (e.g., "#000000" or "black").
-     */
     @ReactProp(name = "textColor")
     public void setTextColor(NativeLatexView view, @Nullable String color) {
         Log.d(TAG, "setTextColor: " + color);

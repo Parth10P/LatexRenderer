@@ -42,7 +42,6 @@ const LaTeXView: React.FC<LaTeXViewProps> = memo(
       let isMounted = true;
 
       const renderLaTeX = async () => {
-        // Validate LaTeX input
         if (!latex || latex.trim() === '') {
           setError('Empty LaTeX expression');
           setLoading(false);
@@ -53,7 +52,6 @@ const LaTeXView: React.FC<LaTeXViewProps> = memo(
           setLoading(true);
           setError(null);
 
-          // Check if LaTeXRenderer is available
           if (!LaTeXRenderer || !LaTeXRenderer.renderLaTeX) {
             throw new Error('LaTeXRenderer native module not available');
           }

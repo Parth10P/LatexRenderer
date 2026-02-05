@@ -179,37 +179,32 @@ const ContentRenderer = ({
 }) => {
   const parts = parseContent(content);
 
-
-  let combinedLatex = '';
-
-  parts.forEach(part => {
-    if (part.type === 'text') {
-
-      const escapeText = (text: string) =>
-        text.replace(/\\/g, '\\textbackslash ').replace(/([&%$#_{}])/g, '\\$1');
-
-      const lines = part.content.split('\n');
-
-      const latexLines = lines.map(line => {
-        return `\\text{${escapeText(line)}}`;
-      });
-
-
-      combinedLatex += latexLines.join(' \\\\\\\\ ');
-    } else {
-      combinedLatex += part.content;
-    }
-  });
-
   return (
     <View style={styles.contentContainer}>
-      <LatexRenderer
-        latex={combinedLatex}
-        fontSize={26}
-        textColor={textColor}
-        style={styles.inlineMath}
-        showErrorInline={true}
-      />
+      <View style={styles.wrapContainer}>
+        {parts.map((part, index) => {
+          if (part.type === 'latex') {
+            const isDisplay = part.display;
+            return (
+              <LatexRenderer
+                key={index}
+                latex={part.content}
+                fontSize={isDisplay ? 30 : 24}
+                textColor={textColor}
+                style={isDisplay ? styles.displayMath : styles.inlineMathItem}
+                showErrorInline={true}
+              />
+            );
+          } else {
+            // Text part
+            return (
+              <Text key={index} style={styles.textItem}>
+                {part.content}
+              </Text>
+            );
+          }
+        })}
+      </View>
     </View>
   );
 };
@@ -390,12 +385,28 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     minHeight: 60,
   },
+  wrapContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+  },
   inlineMath: {
-    alignSelf: 'flex-start',
-    marginVertical: 40,
-    paddingVertical: 20,
-    marginBottom: 40,
+    // Keep legacy style just in case of stale ref refs, but shouldn't be used
+    width: '100%',
     minHeight: 50,
+  },
+  inlineMathItem: {
+    alignSelf: 'center',
+    marginHorizontal: 4,
+    minHeight: 50, // Force height to prevent collapse
+    minWidth: 20, // Force width to ensure visibility
+    maxWidth: '95%', // Allow internal scroll for long items
+    justifyContent: 'center',
+  },
+  textItem: {
+    fontSize: 20,
+    lineHeight: 34,
+    color: '#000000',
   },
   codeContainer: {
     marginTop: 12,

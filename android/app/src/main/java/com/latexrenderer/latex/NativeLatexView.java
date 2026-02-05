@@ -25,19 +25,14 @@ public class NativeLatexView extends FrameLayout {
     
     private static final String TAG = "NativeLatexView";
     
-    // Handler for posting UI updates
     private final Handler handler = new Handler(Looper.getMainLooper());
     
-    // Scroll view for horizontal scrolling of long equations
     private HorizontalScrollView scrollView;
     
-    // Internal MTMathView for rendering
     private MTMathView mathView;
     
-    // Error text view for invalid LaTeX
     private TextView errorView;
     
-    // Current state
     private String latexString = "";
     private float fontSize = 20f;
     private int textColor = Color.BLACK;
@@ -63,7 +58,6 @@ public class NativeLatexView extends FrameLayout {
     private void init(Context context) {
         Log.d(TAG, "Initializing NativeLatexView");
         
-        // Create HorizontalScrollView for long equations
         scrollView = new HorizontalScrollView(context);
         scrollView.setHorizontalScrollBarEnabled(true);
         scrollView.setFillViewport(false);
@@ -73,7 +67,6 @@ public class NativeLatexView extends FrameLayout {
         );
         scrollView.setLayoutParams(scrollParams);
         
-        // Prevent parent from intercepting touch events (fix for scrolling inside FlatList)
         scrollView.setOnTouchListener((v, event) -> {
             int action = event.getAction();
             if (action == android.view.MotionEvent.ACTION_DOWN || 
@@ -83,38 +76,31 @@ public class NativeLatexView extends FrameLayout {
                        action == android.view.MotionEvent.ACTION_CANCEL) {
                 v.getParent().requestDisallowInterceptTouchEvent(false);
             }
-            return false; // Let the ScrollView handle the scrolling
+            return false;
         });
         
-        // Initialize MTMathView for rendering  
         mathView = new MTMathView(context);
         HorizontalScrollView.LayoutParams mathParams = new HorizontalScrollView.LayoutParams(
             LayoutParams.WRAP_CONTENT,
             LayoutParams.WRAP_CONTENT
         );
         mathView.setLayoutParams(mathParams);
-        // Set default font size
         mathView.setFontSize(fontSize);
         
-        // Add mathView to scrollView, then scrollView to this layout
         scrollView.addView(mathView);
         addView(scrollView);
         
-        // Initialize error text view with custom styling
         errorView = new TextView(context);
-        // Text Color: Dark Gold #856404
         errorView.setTextColor(Color.parseColor("#856404"));
         errorView.setTextSize(14f);
         errorView.setVisibility(GONE);
         
-        // Background: Yellow #FFF3CD with Border #FFECB5 and Radius 8dp
         android.graphics.drawable.GradientDrawable background = new android.graphics.drawable.GradientDrawable();
         background.setColor(Color.parseColor("#FFF3CD"));
         background.setCornerRadius(dpToPx(8));
         background.setStroke(dpToPx(1), Color.parseColor("#FFECB5"));
         errorView.setBackground(background);
         
-        // Padding: 12dp
         int padding = dpToPx(12);
         errorView.setPadding(padding, padding, padding, padding);
         
@@ -131,13 +117,11 @@ public class NativeLatexView extends FrameLayout {
         isAttached = true;
         Log.d(TAG, "onAttachedToWindow");
         
-        // If there's pending latex, render it now
         if (pendingLatex != null) {
             final String latex = pendingLatex;
             pendingLatex = null;
-            // Use postDelayed to ensure view is fully ready
             handler.postDelayed(() -> {
-                this.latexString = ""; // Reset to force re-render
+                this.latexString = "";
                 setLatex(latex);
             }, 50);
         }
@@ -149,9 +133,6 @@ public class NativeLatexView extends FrameLayout {
         isAttached = false;
     }
     
-    /**
-     * Set the LaTeX string to render.
-     */
     public void setLatex(String latex) {
         if (latex == null) {
             latex = "";
@@ -159,14 +140,12 @@ public class NativeLatexView extends FrameLayout {
         
         Log.d(TAG, "setLatex called with: " + latex);
         
-        // If not attached yet, queue the latex for later
         if (!isAttached) {
             Log.d(TAG, "Not attached yet, queuing latex");
             pendingLatex = latex;
             return;
         }
         
-        // Skip if same latex
         if (latex.equals(this.latexString)) {
             Log.d(TAG, "Same latex, skipping");
             return;
@@ -184,26 +163,21 @@ public class NativeLatexView extends FrameLayout {
         try {
             Log.d(TAG, "Rendering latex: " + latex);
             
-            // Configure MTMathView - order matters!
             mathView.setTextColor(textColor);
             mathView.setFontSize(fontSize);
             
-            // Set the LaTeX - important to set this AFTER config
             mathView.setLatex(latex);
             
-            // Show scroll view (containing math view), hide error
             scrollView.setVisibility(VISIBLE);
             errorView.setVisibility(GONE);
             
             Log.d(TAG, "MTMathView getLatex(): '" + mathView.getLatex() + "'");
             
-            // Force a complete re-layout
             mathView.requestLayout();
             mathView.invalidate();
             requestLayout();
             invalidate();
             
-            // Double check after layout
             handler.postDelayed(() -> {
                 Log.d(TAG, "After delay - mathView: " + 
                            "size=" + mathView.getWidth() + "x" + mathView.getHeight() +
@@ -214,7 +188,6 @@ public class NativeLatexView extends FrameLayout {
         } catch (Exception e) {
             Log.e(TAG, "Error rendering latex: " + e.getMessage(), e);
             
-            // Handle rendering error - show error message
             hasError = true;
             String errorMsg = "⚠️ LaTeX Error";
             if (e.getMessage() != null && !e.getMessage().isEmpty()) {
@@ -223,17 +196,12 @@ public class NativeLatexView extends FrameLayout {
             
             errorView.setText(errorMsg);
             errorView.setVisibility(VISIBLE);
-            // Don't hide the scroll view, just show error on top or replacing content
             scrollView.setVisibility(GONE);
             
-            // Ensure error view measures correctly
             errorView.requestLayout();
         }
     }
     
-    /**
-     * Set the font size for rendering.
-     */
     public void setFontSize(float size) {
         Log.d(TAG, "setFontSize: " + size);
         if (this.fontSize != size) {
@@ -241,7 +209,7 @@ public class NativeLatexView extends FrameLayout {
             if (mathView != null) {
                 mathView.setFontSize(size);
             }
-            // Re-render
+
             if (isAttached && !latexString.isEmpty()) {
                 String current = this.latexString;
                 this.latexString = "";
@@ -250,9 +218,6 @@ public class NativeLatexView extends FrameLayout {
         }
     }
     
-    /**
-     * Set the text color.
-     */
     public void setTextColor(int color) {
         Log.d(TAG, "setTextColor: " + color);
         if (this.textColor != color) {
@@ -260,7 +225,7 @@ public class NativeLatexView extends FrameLayout {
             if (mathView != null) {
                 mathView.setTextColor(color);
             }
-            // Re-render
+
             if (isAttached && !latexString.isEmpty()) {
                 String current = this.latexString;
                 this.latexString = "";

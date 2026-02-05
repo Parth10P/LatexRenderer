@@ -21,7 +21,7 @@ public class LatexPackage implements ReactPackage {
     @NonNull
     @Override
     public List<NativeModule> createNativeModules(@NonNull ReactApplicationContext reactContext) {
-        // No native modules, only view manager
+
         return Collections.emptyList();
     }
     
