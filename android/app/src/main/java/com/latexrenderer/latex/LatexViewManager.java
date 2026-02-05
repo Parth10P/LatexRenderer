@@ -22,7 +22,7 @@ import com.facebook.yoga.YogaNode;
  * This exposes the AndroidMath MTMathView directly to React Native
  * with proper measurement for Yoga layout system.
  */
-public class LatexViewManager extends SimpleViewManager<MTMathView> {
+public class LatexViewManager extends SimpleViewManager<NativeLatexView> {
     
     private static final String TAG = "LatexViewManager";
     public static final String REACT_CLASS = "NativeLatexView";
@@ -35,48 +35,27 @@ public class LatexViewManager extends SimpleViewManager<MTMathView> {
     
     @NonNull
     @Override
-    protected MTMathView createViewInstance(@NonNull ThemedReactContext reactContext) {
-        Log.d(TAG, "Creating MTMathView instance");
-        MTMathView view = new MTMathView(reactContext);
-        // Set default size
-        view.setFontSize(20f);
-        return view;
+    protected NativeLatexView createViewInstance(@NonNull ThemedReactContext reactContext) {
+        Log.d(TAG, "Creating NativeLatexView instance");
+        return new NativeLatexView(reactContext);
     }
     
     /**
      * Set the LaTeX string to render.
      */
     @ReactProp(name = "latex")
-    public void setLatex(MTMathView view, @Nullable String latex) {
+    public void setLatex(NativeLatexView view, @Nullable String latex) {
         Log.d(TAG, "setLatex: " + latex);
-        if (latex != null && !latex.isEmpty()) {
-            view.setLatex(latex);
-            Log.d(TAG, "After setLatex, getLatex(): " + view.getLatex());
-        } else {
-            view.setLatex("");
-        }
-        
-        // Force measure and layout update
-        view.measure(
-            View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
-            View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
-        );
-        
-        Log.d(TAG, "After measure: " + view.getMeasuredWidth() + "x" + view.getMeasuredHeight());
-        
-        view.requestLayout();
-        view.invalidate();
+        view.setLatex(latex);
     }
     
     /**
      * Set the font size for rendering.
      */
     @ReactProp(name = "fontSize", defaultFloat = 20f)
-    public void setFontSize(MTMathView view, float fontSize) {
+    public void setFontSize(NativeLatexView view, float fontSize) {
         Log.d(TAG, "setFontSize: " + fontSize);
         view.setFontSize(fontSize);
-        view.requestLayout();
-        view.invalidate();
     }
     
     /**
@@ -84,7 +63,7 @@ public class LatexViewManager extends SimpleViewManager<MTMathView> {
      * Accepts a color string (e.g., "#000000" or "black").
      */
     @ReactProp(name = "textColor")
-    public void setTextColor(MTMathView view, @Nullable String color) {
+    public void setTextColor(NativeLatexView view, @Nullable String color) {
         Log.d(TAG, "setTextColor: " + color);
         if (color != null && !color.isEmpty()) {
             try {
@@ -96,6 +75,5 @@ public class LatexViewManager extends SimpleViewManager<MTMathView> {
         } else {
             view.setTextColor(Color.BLACK);
         }
-        view.invalidate();
     }
 }

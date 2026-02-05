@@ -179,28 +179,24 @@ const ContentRenderer = ({
 }) => {
   const parts = parseContent(content);
 
-  // Combine all parts into a single LaTeX string for natural flow
+
   let combinedLatex = '';
 
   parts.forEach(part => {
     if (part.type === 'text') {
-      // Escape special LaTeX characters
-      // We escape backslashes first, then other special chars
-      // We do NOT escape newlines here, we split by them
+
       const escapeText = (text: string) =>
         text.replace(/\\/g, '\\textbackslash ').replace(/([&%$#_{}])/g, '\\$1');
 
       const lines = part.content.split('\n');
 
       const latexLines = lines.map(line => {
-        // Skip empty lines if needed, or preserve them as empty \text{}
         return `\\text{${escapeText(line)}}`;
       });
 
-      // Join with LaTeX line break
+
       combinedLatex += latexLines.join(' \\\\\\\\ ');
     } else {
-      // For math parts, add them as-is
       combinedLatex += part.content;
     }
   });
@@ -209,9 +205,9 @@ const ContentRenderer = ({
     <View style={styles.contentContainer}>
       <LatexRenderer
         latex={combinedLatex}
-        fontSize={26} // Use inline size for the whole block for consistency
+        fontSize={26}
         textColor={textColor}
-        style={styles.inlineMath} // Use inline style to allow wrapping
+        style={styles.inlineMath}
         showErrorInline={true}
       />
     </View>
@@ -396,9 +392,9 @@ const styles = StyleSheet.create({
   },
   inlineMath: {
     alignSelf: 'flex-start',
-    marginVertical: 40, // Increased from 24 to 40 to prevent top overlap
-    paddingVertical: 20, // Increased from 12 to 20 for internal breathing room
-    marginBottom: 40, // Extra bottom margin to prevent overlapping with Source Code box
+    marginVertical: 40,
+    paddingVertical: 20,
+    marginBottom: 40,
     minHeight: 50,
   },
   codeContainer: {

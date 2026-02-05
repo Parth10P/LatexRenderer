@@ -100,11 +100,24 @@ public class NativeLatexView extends FrameLayout {
         scrollView.addView(mathView);
         addView(scrollView);
         
-        // Initialize error text view
+        // Initialize error text view with custom styling
         errorView = new TextView(context);
-        errorView.setTextColor(Color.RED);
+        // Text Color: Dark Gold #856404
+        errorView.setTextColor(Color.parseColor("#856404"));
         errorView.setTextSize(14f);
         errorView.setVisibility(GONE);
+        
+        // Background: Yellow #FFF3CD with Border #FFECB5 and Radius 8dp
+        android.graphics.drawable.GradientDrawable background = new android.graphics.drawable.GradientDrawable();
+        background.setColor(Color.parseColor("#FFF3CD"));
+        background.setCornerRadius(dpToPx(8));
+        background.setStroke(dpToPx(1), Color.parseColor("#FFECB5"));
+        errorView.setBackground(background);
+        
+        // Padding: 12dp
+        int padding = dpToPx(12);
+        errorView.setPadding(padding, padding, padding, padding);
+        
         errorView.setLayoutParams(new FrameLayout.LayoutParams(
             LayoutParams.WRAP_CONTENT,
             LayoutParams.WRAP_CONTENT
@@ -203,9 +216,9 @@ public class NativeLatexView extends FrameLayout {
             
             // Handle rendering error - show error message
             hasError = true;
-            String errorMsg = "LaTeX Error";
+            String errorMsg = "⚠️ LaTeX Error";
             if (e.getMessage() != null && !e.getMessage().isEmpty()) {
-                errorMsg = "Error: " + e.getMessage();
+                errorMsg = "⚠️ Error: " + e.getMessage();
             }
             
             errorView.setText(errorMsg);
@@ -256,6 +269,11 @@ public class NativeLatexView extends FrameLayout {
         }
     }
     
+    private int dpToPx(int dp) {
+        float density = getResources().getDisplayMetrics().density;
+        return Math.round(dp * density);
+    }
+
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
