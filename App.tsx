@@ -1,11 +1,4 @@
-/**
- * React Native LaTeX Renderer Demo App
- *
- * Demonstrates native LaTeX rendering with all 15 test cases from the assignment.
- * Uses LatexRenderer component backed by native MTMathView (vector-based, not image).
- */
-
-import React from 'react';
+import React, { useState } from 'react';
 import {
   SafeAreaView,
   FlatList,
@@ -14,10 +7,11 @@ import {
   View,
   StatusBar,
   useColorScheme,
+  TouchableOpacity,
 } from 'react-native';
 import LatexRenderer from './src/components/LatexRenderer';
+import PerformanceTestScreen from './src/components/PerformanceTestScreen';
 
-// All 15 test cases from IMPLEMENTATION_PROMPT.md
 const TEST_CASES = [
   {
     id: '1',
@@ -102,15 +96,9 @@ interface ContentPart {
   display?: boolean;
 }
 
-/**
- * Parse content to extract LaTeX expressions.
- * Handles both $...$ (inline) and $$...$$ (display) delimiters.
- */
 const parseContent = (content: string): ContentPart[] => {
   const parts: ContentPart[] = [];
   let currentIndex = 0;
-
-  // Match $$ ... $$ for display math
   const displayRegex = /\$\$([\s\S]*?)\$\$/g;
   // Match $ ... $ for inline math (but not $$)
   const inlineRegex = /\$([^\$]+?)\$/g;
@@ -125,7 +113,6 @@ const parseContent = (content: string): ContentPart[] => {
   const allMatches: MathMatch[] = [];
   let match: RegExpExecArray | null;
 
-  // Find all display math
   while ((match = displayRegex.exec(content)) !== null) {
     allMatches.push({
       start: match.index,
@@ -135,17 +122,13 @@ const parseContent = (content: string): ContentPart[] => {
     });
   }
 
-  // Find all inline math
   while ((match = inlineRegex.exec(content)) !== null) {
-    // Check if this match is not inside a display math block
     const insideDisplay = allMatches.some(
       dm => match!.index > dm.start && match!.index < dm.end,
     );
     if (!insideDisplay) {
-      // Check if it looks like a currency value (followed by a number)
       const afterDollar = match[1];
       if (/^\d+(\.\d+)?$/.test(afterDollar.trim())) {
-        // This is likely a currency value, not LaTeX - skip
         continue;
       }
 
@@ -158,10 +141,8 @@ const parseContent = (content: string): ContentPart[] => {
     }
   }
 
-  // Sort by start position
   allMatches.sort((a, b) => a.start - b.start);
 
-  // Build parts array
   allMatches.forEach(m => {
     if (m.start > currentIndex) {
       parts.push({
@@ -184,7 +165,6 @@ const parseContent = (content: string): ContentPart[] => {
     });
   }
 
-  // If no LaTeX found, return as single text part
   if (parts.length === 0) {
     parts.push({ type: 'text', content });
   }
@@ -192,9 +172,6 @@ const parseContent = (content: string): ContentPart[] => {
   return parts;
 };
 
-/**
- * ContentRenderer - Renders mixed text and LaTeX content.
- */
 const ContentRenderer = ({
   content,
   textColor,
@@ -230,27 +207,41 @@ const ContentRenderer = ({
   );
 };
 
-/**
- * Main App Component
- */
 const App = () => {
+  const [showPerformanceTest, setShowPerformanceTest] = useState(false);
   const isDarkMode = useColorScheme() === 'dark';
   const textColor = isDarkMode ? '#FFFFFF' : '#000000';
   const backgroundColor = isDarkMode ? '#1a1a1a' : '#f5f5f5';
   const cardBackgroundColor = isDarkMode ? '#2d2d2d' : '#ffffff';
 
+  if (showPerformanceTest) {
+    return (
+      <PerformanceTestScreen onBack={() => setShowPerformanceTest(false)} />
+    );
+  }
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor }]}>
       <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
       <View style={[styles.header, { backgroundColor: cardBackgroundColor }]}>
-        <Text style={[styles.title, { color: textColor }]}>
-          LaTeX Renderer Test
-        </Text>
-        <Text
-          style={[styles.subtitle, { color: isDarkMode ? '#888' : '#666' }]}
-        >
-          Native View - All 15 Test Cases
-        </Text>
+        <View style={styles.headerRow}>
+          <View style={styles.headerTextContainer}>
+            <Text style={[styles.title, { color: textColor }]}>
+              LaTeX Renderer Test
+            </Text>
+            <Text
+              style={[styles.subtitle, { color: isDarkMode ? '#888' : '#666' }]}
+            >
+              Native View - All 15 Test Cases
+            </Text>
+          </View>
+          <TouchableOpacity
+            style={styles.performanceButton}
+            onPress={() => setShowPerformanceTest(true)}
+          >
+            <Text style={styles.performanceButtonText}>🚀 Test 50×</Text>
+          </TouchableOpacity>
+        </View>
       </View>
       <FlatList
         data={TEST_CASES}
@@ -277,11 +268,34 @@ const App = () => {
               )}
             </View>
             <ContentRenderer content={item.content} textColor={textColor} />
+
+            <View
+              style={[
+                styles.codeContainer,
+                { backgroundColor: isDarkMode ? '#1a1a1a' : '#f8f8f8' },
+              ]}
+            >
+              <Text
+                style={[
+                  styles.codeLabel,
+                  { color: isDarkMode ? '#888' : '#666' },
+                ]}
+              >
+                LaTeX Source:
+              </Text>
+              <Text
+                style={[
+                  styles.codeText,
+                  { color: isDarkMode ? '#e0e0e0' : '#333' },
+                ]}
+              >
+                {item.content}
+              </Text>
+            </View>
           </View>
         )}
         ItemSeparatorComponent={() => <View style={styles.separator} />}
         contentContainerStyle={styles.listContent}
-        // Performance optimizations for smooth scrolling
         removeClippedSubviews={true}
         maxToRenderPerBatch={10}
         windowSize={10}
@@ -296,9 +310,29 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    padding: 16,
+    paddingHorizontal: 20,
+    paddingVertical: 40,
     borderBottomWidth: 1,
     borderBottomColor: '#ddd',
+  },
+  headerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  headerTextContainer: {
+    flex: 1,
+  },
+  performanceButton: {
+    backgroundColor: '#007AFF',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  performanceButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
   },
   title: {
     fontSize: 20,
@@ -354,6 +388,25 @@ const styles = StyleSheet.create({
     marginVertical: 24,
     paddingVertical: 12,
     minHeight: 50,
+  },
+  codeContainer: {
+    marginTop: 12,
+    padding: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#ddd',
+  },
+  codeLabel: {
+    fontSize: 11,
+    fontWeight: '600',
+    marginBottom: 6,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  codeText: {
+    fontFamily: 'monospace',
+    fontSize: 12,
+    lineHeight: 18,
   },
   separator: {
     height: 1,
