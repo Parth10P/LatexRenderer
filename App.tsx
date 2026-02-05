@@ -89,7 +89,6 @@ const TEST_CASES = [
   },
 ];
 
-// Type for parsed content parts
 interface ContentPart {
   type: 'text' | 'latex';
   content: string;
@@ -100,7 +99,6 @@ const parseContent = (content: string): ContentPart[] => {
   const parts: ContentPart[] = [];
   let currentIndex = 0;
   const displayRegex = /\$\$([\s\S]*?)\$\$/g;
-  // Match $ ... $ for inline math (but not $$)
   const inlineRegex = /\$([^\$]+?)\$/g;
 
   interface MathMatch {
@@ -185,7 +183,11 @@ const ContentRenderer = ({
     <View style={styles.contentContainer}>
       {parts.map((part, index) => {
         if (part.type === 'text') {
-          return null;
+          return (
+            <Text key={index} style={[styles.text, { color: textColor }]}>
+              {part.content}
+            </Text>
+          );
         } else {
           return (
             <LatexRenderer
