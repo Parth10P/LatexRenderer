@@ -1,11 +1,4 @@
-/**
- * LaTexRenderer App - Demo with FlatList for 60 FPS scrolling test
- *
- * This app demonstrates native LaTeX rendering with 50+ equations
- * in a FlatList to prove smooth scrolling performance.
- */
-
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import {
   FlatList,
   StatusBar,
@@ -13,10 +6,12 @@ import {
   Text,
   View,
   useColorScheme,
+  TouchableOpacity,
+  TextInput,
+  ScrollView,
 } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import LatexRenderer from './src/components/LatexRenderer';
-
 import { LATEX_EQUATIONS } from './src/data/latexEquations';
 
 // Item type for FlatList
@@ -42,9 +37,19 @@ const generateEquations = (): EquationItem[] => {
 
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
+  const [activeTab, setActiveTab] = useState<'examples' | 'playground'>(
+    'examples',
+  );
+  const [inputLatex, setInputLatex] = useState<string>('\\frac{a}{b}');
+  const [displayLatex, setDisplayLatex] = useState<string>('\\frac{a}{b}');
 
   // Memoize equations list
   const equations = useMemo(() => generateEquations(), []);
+
+  // Handler for render button
+  const handleRender = () => {
+    setDisplayLatex(inputLatex);
+  };
 
   // Memoized render function for optimal FlatList performance
   const renderItem = useCallback(
@@ -92,26 +97,95 @@ function App() {
           <Text style={[styles.title, isDarkMode && styles.darkText]}>
             Native LaTeX Renderer
           </Text>
-          <Text style={[styles.subtitle, isDarkMode && styles.darkSubText]}>
-            50 equations • Scroll to test 60 FPS
-          </Text>
         </View>
 
-        <FlatList
-          data={equations}
-          renderItem={renderItem}
-          keyExtractor={keyExtractor}
-          getItemLayout={getItemLayout}
-          // Performance optimizations
-          removeClippedSubviews={true}
-          maxToRenderPerBatch={10}
-          windowSize={10}
-          initialNumToRender={8}
-          updateCellsBatchingPeriod={60}
-          // Styling
-          contentContainerStyle={styles.listContent}
-          showsVerticalScrollIndicator={true}
-        />
+        {/* Tab Navigation */}
+        <View style={styles.tabContainer}>
+          <TouchableOpacity
+            style={[
+              styles.tabButton,
+              activeTab === 'examples' && styles.activeTab,
+            ]}
+            onPress={() => setActiveTab('examples')}
+          >
+            <Text
+              style={[
+                styles.tabText,
+                activeTab === 'examples' && styles.activeTabText,
+              ]}
+            >
+              Examples
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.tabButton,
+              activeTab === 'playground' && styles.activeTab,
+            ]}
+            onPress={() => setActiveTab('playground')}
+          >
+            <Text
+              style={[
+                styles.tabText,
+                activeTab === 'playground' && styles.activeTabText,
+              ]}
+            >
+              Playground
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* View Content */}
+        {activeTab === 'examples' ? (
+          <FlatList
+            data={equations}
+            renderItem={renderItem}
+            keyExtractor={keyExtractor}
+            getItemLayout={getItemLayout}
+            // Performance optimizations
+            removeClippedSubviews={true}
+            maxToRenderPerBatch={10}
+            windowSize={10}
+            initialNumToRender={8}
+            updateCellsBatchingPeriod={60}
+            // Styling
+            contentContainerStyle={styles.listContent}
+            showsVerticalScrollIndicator={true}
+          />
+        ) : (
+          <ScrollView contentContainerStyle={styles.playgroundContainer}>
+            <Text style={[styles.label, isDarkMode && styles.darkText]}>
+              Enter LaTeX Code:
+            </Text>
+            <TextInput
+              style={[styles.input, isDarkMode && styles.darkInput]}
+              multiline
+              value={inputLatex}
+              onChangeText={setInputLatex}
+              placeholder="e.g. \sqrt{x}"
+              placeholderTextColor="#999"
+            />
+
+            <TouchableOpacity
+              style={styles.renderButton}
+              onPress={handleRender}
+            >
+              <Text style={styles.renderButtonText}>Render LaTeX</Text>
+            </TouchableOpacity>
+
+            <Text style={[styles.label, isDarkMode && styles.darkText]}>
+              Preview:
+            </Text>
+            <View style={styles.previewCard}>
+              <LatexRenderer
+                latex={displayLatex}
+                fontSize={30}
+                textColor={isDarkMode ? '#FFFFFF' : '#000000'}
+                style={styles.latex}
+              />
+            </View>
+          </ScrollView>
+        )}
       </SafeAreaView>
     </SafeAreaProvider>
   );
@@ -129,19 +203,94 @@ const styles = StyleSheet.create({
     padding: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#E0E0E0',
+    alignItems: 'center',
   },
   title: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: 'bold',
     color: '#333',
   },
+  // Tabs
+  tabContainer: {
+    flexDirection: 'row',
+    padding: 12,
+    backgroundColor: '#FFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#EEE',
+    justifyContent: 'center',
+    gap: 12,
+  },
+  tabButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 24,
+    borderRadius: 20,
+    backgroundColor: '#F0F0F0',
+  },
+  activeTab: {
+    backgroundColor: '#007AFF',
+  },
+  tabText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#555',
+  },
+  activeTabText: {
+    color: '#FFF',
+  },
+  // Playground
+  playgroundContainer: {
+    padding: 20,
+  },
+  label: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 8,
+    color: '#333',
+    marginTop: 12,
+  },
+  input: {
+    backgroundColor: '#FFF',
+    borderWidth: 1,
+    borderColor: '#DDD',
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+    minHeight: 100,
+    textAlignVertical: 'top',
+    color: '#000',
+  },
+  darkInput: {
+    backgroundColor: '#333',
+    borderColor: '#555',
+    color: '#FFF',
+  },
+  renderButton: {
+    backgroundColor: '#007AFF',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginTop: 16,
+  },
+  renderButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  previewCard: {
+    backgroundColor: '#FFF',
+    borderRadius: 12,
+    padding: 24,
+    minHeight: 150,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#EEE',
+    marginTop: 8,
+  },
+  // Existing Styles
   darkText: {
     color: '#FFFFFF',
-  },
-  subtitle: {
-    fontSize: 14,
-    color: '#666',
-    marginTop: 4,
   },
   darkSubText: {
     color: '#999',
