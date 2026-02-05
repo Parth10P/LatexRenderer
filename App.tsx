@@ -181,30 +181,30 @@ const ContentRenderer = ({
 
   return (
     <View style={styles.contentContainer}>
-      <View style={styles.wrapContainer}>
-        {parts.map((part, index) => {
-          if (part.type === 'latex') {
-            const isDisplay = part.display;
-            return (
-              <LatexRenderer
-                key={index}
-                latex={part.content}
-                fontSize={isDisplay ? 30 : 24}
-                textColor={textColor}
-                style={isDisplay ? styles.displayMath : styles.inlineMathItem}
-                showErrorInline={true}
-              />
-            );
-          } else {
-            // Text part
-            return (
-              <Text key={index} style={styles.textItem}>
-                {part.content}
-              </Text>
-            );
-          }
-        })}
-      </View>
+      {parts.map((part, index) => {
+        if (part.type === 'latex') {
+          const isDisplay = part.display;
+          // Use consistent large font size like PerformanceTestScreen
+          const fontSize = isDisplay ? 45 : 40;
+          return (
+            <LatexRenderer
+              key={index}
+              latex={part.content}
+              fontSize={fontSize}
+              textColor={textColor}
+              style={isDisplay ? styles.displayMath : styles.inlineMathItem}
+              showErrorInline={true}
+            />
+          );
+        } else {
+          // Text part
+          return (
+            <Text key={index} style={[styles.textItem, { color: textColor }]}>
+              {part.content}
+            </Text>
+          );
+        }
+      })}
     </View>
   );
 };
@@ -349,6 +349,8 @@ const styles = StyleSheet.create({
   },
   item: {
     padding: 16,
+    paddingHorizontal: 10
+    ,
   },
   errorItem: {
     borderLeftWidth: 4,
@@ -373,40 +375,44 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     flexDirection: 'column',
+    alignItems: 'center',
+    width: '100%',
+    paddingHorizontal: 16,
   },
   text: {
     fontSize: 16,
     lineHeight: 26,
     marginVertical: 8,
+    textAlign: 'center',
   },
   displayMath: {
     alignSelf: 'center',
-    marginVertical: 24,
-    paddingVertical: 12,
+    marginVertical: 16,
+    paddingVertical: 8,
     minHeight: 60,
   },
   wrapContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: 'column',
     alignItems: 'center',
+    width: '100%',
   },
   inlineMath: {
-    // Keep legacy style just in case of stale ref refs, but shouldn't be used
-    width: '100%',
+    alignSelf: 'center',
+    marginVertical: 12,
+    paddingVertical: 8,
     minHeight: 50,
   },
   inlineMathItem: {
     alignSelf: 'center',
-    marginHorizontal: 4,
-    minHeight: 50, // Force height to prevent collapse
-    minWidth: 20, // Force width to ensure visibility
-    maxWidth: '95%', // Allow internal scroll for long items
-    justifyContent: 'center',
+    marginVertical: 10,
+    minHeight: 40,
   },
   textItem: {
     fontSize: 20,
     lineHeight: 34,
     color: '#000000',
+    textAlign: 'center',
+    paddingHorizontal: 8,
   },
   codeContainer: {
     marginTop: 12,

@@ -8,8 +8,11 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.agog.mathdisplay.MTMathView;
+import com.facebook.react.bridge.ReadableMap;
+import com.facebook.react.uimanager.LayoutShadowNode;
 import com.facebook.react.uimanager.SimpleViewManager;
 import com.facebook.react.uimanager.ThemedReactContext;
+import com.facebook.react.uimanager.ViewManagerDelegate;
 import com.facebook.react.uimanager.annotations.ReactProp;
 import com.facebook.yoga.YogaMeasureFunction;
 import com.facebook.yoga.YogaMeasureMode;
@@ -37,7 +40,8 @@ public class LatexViewManager extends SimpleViewManager<NativeLatexView> {
     @Override
     protected NativeLatexView createViewInstance(@NonNull ThemedReactContext reactContext) {
         Log.d(TAG, "Creating NativeLatexView instance");
-        return new NativeLatexView(reactContext);
+        NativeLatexView view = new NativeLatexView(reactContext);
+        return view;
     }
     
     @ReactProp(name = "latex")
@@ -65,5 +69,12 @@ public class LatexViewManager extends SimpleViewManager<NativeLatexView> {
         } else {
             view.setTextColor(Color.BLACK);
         }
+    }
+    
+    @Override
+    public void onAfterUpdateTransaction(@NonNull NativeLatexView view) {
+        super.onAfterUpdateTransaction(view);
+        // Force the view to re-measure after props are updated
+        view.requestLayout();
     }
 }

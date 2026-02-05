@@ -122,12 +122,23 @@ const LatexRenderer: React.FC<LatexRendererProps> = memo(
       );
     }
 
+    // Calculate minimum dimensions based on fontSize and content length
+    // This ensures the view has space to render before native measure completes
+    const minHeight = Math.ceil(fontSize * 2.5);
+    // Estimate width based on latex content length - be more generous to prevent clipping
+    const estimatedWidth = Math.max(fontSize * 5, cleanLatex.length * fontSize * 0.7);
+
     return (
       <NativeLatexView
         latex={cleanLatex}
         fontSize={fontSize}
         textColor={textColor}
-        style={StyleSheet.flatten([styles.container, style])}
+        style={StyleSheet.flatten([
+          styles.container,
+          style,
+          // Put our calculated dimensions LAST to override any external constraints
+          { minHeight, minWidth: Math.min(estimatedWidth, 800) },
+        ])}
         onLatexError={handleNativeError}
       />
     );
@@ -139,6 +150,8 @@ LatexRenderer.displayName = 'LatexRenderer';
 const styles = StyleSheet.create({
   container: {
     alignSelf: 'flex-start',
+    // Ensure the view can grow with its content
+    flexShrink: 0,
   },
   fallback: {
     padding: 8,
