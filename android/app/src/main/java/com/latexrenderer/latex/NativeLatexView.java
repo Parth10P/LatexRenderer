@@ -7,6 +7,7 @@ import android.os.Looper;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.widget.FrameLayout;
+import android.widget.HorizontalScrollView;
 import android.widget.TextView;
 
 import com.agog.mathdisplay.MTMathView;
@@ -17,6 +18,7 @@ import com.agog.mathdisplay.MTMathView;
  * This view wraps MTMathView from AndroidMath library and provides:
  * - Direct native LaTeX rendering (no WebView)
  * - Error handling for invalid LaTeX (displays red error text)
+ * - Horizontal scrolling for long equations
  * - Responsive layout with proper measurement
  */
 public class NativeLatexView extends FrameLayout {
@@ -25,6 +27,9 @@ public class NativeLatexView extends FrameLayout {
     
     // Handler for posting UI updates
     private final Handler handler = new Handler(Looper.getMainLooper());
+    
+    // Scroll view for horizontal scrolling of long equations
+    private HorizontalScrollView scrollView;
     
     // Internal MTMathView for rendering
     private MTMathView mathView;
@@ -58,16 +63,35 @@ public class NativeLatexView extends FrameLayout {
     private void init(Context context) {
         Log.d(TAG, "Initializing NativeLatexView");
         
-        // Initialize MTMathView for rendering  
-        mathView = new MTMathView(context);
-        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
+        // Create HorizontalScrollView for long equations
+        scrollView = new HorizontalScrollView(context);
+        scrollView.setHorizontalScrollBarEnabled(true);
+        scrollView.setFillViewport(false);
+        FrameLayout.LayoutParams scrollParams = new FrameLayout.LayoutParams(
             LayoutParams.MATCH_PARENT,
             LayoutParams.WRAP_CONTENT
         );
-        mathView.setLayoutParams(params);
+        scrollView.setLayoutParams(scrollParams);
+        
+        // Prevent parent from intercepting touch events (fix for scrolling inside FlatList)
+        scrollView.setOnTouchListener((v, event) -> {
+            v.getParent().requestDisallowInterceptTouchEvent(true);
+            return false;
+        });
+        
+        // Initialize MTMathView for rendering  
+        mathView = new MTMathView(context);
+        HorizontalScrollView.LayoutParams mathParams = new HorizontalScrollView.LayoutParams(
+            LayoutParams.WRAP_CONTENT,
+            LayoutParams.WRAP_CONTENT
+        );
+        mathView.setLayoutParams(mathParams);
         // Set default font size
         mathView.setFontSize(fontSize);
-        addView(mathView);
+        
+        // Add mathView to scrollView, then scrollView to this layout
+        scrollView.addView(mathView);
+        addView(scrollView);
         
         // Initialize error text view
         errorView = new TextView(context);
@@ -132,7 +156,7 @@ public class NativeLatexView extends FrameLayout {
         this.hasError = false;
         
         if (latex.isEmpty()) {
-            mathView.setVisibility(GONE);
+            scrollView.setVisibility(GONE);
             errorView.setVisibility(GONE);
             return;
         }
@@ -147,8 +171,8 @@ public class NativeLatexView extends FrameLayout {
             // Set the LaTeX - important to set this AFTER config
             mathView.setLatex(latex);
             
-            // Show math view, hide error
-            mathView.setVisibility(VISIBLE);
+            // Show scroll view (containing math view), hide error
+            scrollView.setVisibility(VISIBLE);
             errorView.setVisibility(GONE);
             
             Log.d(TAG, "MTMathView getLatex(): '" + mathView.getLatex() + "'");
@@ -179,7 +203,7 @@ public class NativeLatexView extends FrameLayout {
             
             errorView.setText(errorMsg);
             errorView.setVisibility(VISIBLE);
-            mathView.setVisibility(GONE);
+            scrollView.setVisibility(GONE);
         }
     }
     

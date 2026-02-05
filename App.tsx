@@ -86,6 +86,8 @@ const LATEX_EQUATIONS = [
   'i^2 = -1',
   '|z| = \\sqrt{a^2 + b^2}',
   '\\arg(z) = \\arctan\\left(\\frac{b}{a}\\right)',
+
+  '\\left(a_1 + a_2 + a_3 + a_4 + a_5 + a_6 + a_7 + a_8 + a_9 + a_{10} + a_{11} + a_{12} + a_{13} + a_{14} + a_{15} + a_{16} + a_{17} + a_{18} + a_{19} + a_{20} + a_{21} + a_{22} + a_{23} + a_{24} + a_{25} + \\cdots + a_n \\right)^2',
 ];
 
 // Item type for FlatList
@@ -98,7 +100,7 @@ interface EquationItem {
 // Generate 50+ items by repeating if needed
 const generateEquations = (): EquationItem[] => {
   const items: EquationItem[] = [];
-  for (let i = 0; i < 50; i++) {
+  for (let i = 0; i < 60; i++) {
     const latex = LATEX_EQUATIONS[i % LATEX_EQUATIONS.length];
     items.push({
       id: `eq-${i}`,
@@ -125,7 +127,7 @@ function App() {
         <View style={styles.latexContainer}>
           <LatexRenderer
             latex={item.latex}
-            fontSize={18}
+            fontSize={30}
             textColor={isDarkMode ? '#FFFFFF' : '#000000'}
             style={styles.latex}
           />
@@ -176,7 +178,7 @@ function App() {
           maxToRenderPerBatch={10}
           windowSize={10}
           initialNumToRender={8}
-          updateCellsBatchingPeriod={50}
+          updateCellsBatchingPeriod={60}
           // Styling
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={true}
