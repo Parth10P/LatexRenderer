@@ -75,8 +75,15 @@ public class NativeLatexView extends FrameLayout {
         
         // Prevent parent from intercepting touch events (fix for scrolling inside FlatList)
         scrollView.setOnTouchListener((v, event) -> {
-            v.getParent().requestDisallowInterceptTouchEvent(true);
-            return false;
+            int action = event.getAction();
+            if (action == android.view.MotionEvent.ACTION_DOWN || 
+                action == android.view.MotionEvent.ACTION_MOVE) {
+                v.getParent().requestDisallowInterceptTouchEvent(true);
+            } else if (action == android.view.MotionEvent.ACTION_UP || 
+                       action == android.view.MotionEvent.ACTION_CANCEL) {
+                v.getParent().requestDisallowInterceptTouchEvent(false);
+            }
+            return false; // Let the ScrollView handle the scrolling
         });
         
         // Initialize MTMathView for rendering  
