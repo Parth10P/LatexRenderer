@@ -210,7 +210,11 @@ public class NativeLatexView extends FrameLayout {
             
             errorView.setText(errorMsg);
             errorView.setVisibility(VISIBLE);
+            // Don't hide the scroll view, just show error on top or replacing content
             scrollView.setVisibility(GONE);
+            
+            // Ensure error view measures correctly
+            errorView.requestLayout();
         }
     }
     

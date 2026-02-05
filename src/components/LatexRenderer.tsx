@@ -64,18 +64,46 @@ const NativeLatexView =
  */
 const LatexRenderer: React.FC<LatexRendererProps> = memo(
   ({ latex, fontSize = 20, textColor = '#000000', style }) => {
+    // Sanitize the LaTeX string by removing wrapping delimiters
+    const cleanLatex = React.useMemo(() => {
+      let cleaned = latex.trim();
+
+      // Remove \[ ... \]
+      if (cleaned.startsWith('\\[') && cleaned.endsWith('\\]')) {
+        cleaned = cleaned.substring(2, cleaned.length - 2).trim();
+      }
+
+      // Remove $$ ... $$
+      if (cleaned.startsWith('$$') && cleaned.endsWith('$$')) {
+        cleaned = cleaned.substring(2, cleaned.length - 2).trim();
+      }
+
+      // Remove $ ... $ (only if it's wrapping the whole string)
+      if (
+        cleaned.startsWith('$') &&
+        cleaned.endsWith('$') &&
+        !cleaned.startsWith('$$')
+      ) {
+        cleaned = cleaned.substring(1, cleaned.length - 1).trim();
+      }
+
+      return cleaned;
+    }, [latex]);
+
     // Fallback for iOS or web
     if (Platform.OS !== 'android' || !NativeLatexView) {
       return (
         <View style={[styles.fallback, style]}>
-          <Text style={styles.fallbackText}>LaTeX: {latex} (Android only)</Text>
+          <Text style={styles.fallbackText}>
+            LaTeX: {cleanLatex} (Android only)
+          </Text>
         </View>
       );
     }
 
     return (
       <NativeLatexView
-        latex={latex}
+        latex={cleanLatex}
         fontSize={fontSize}
         textColor={textColor}
         style={StyleSheet.flatten([styles.container, style])}
