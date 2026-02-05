@@ -17,7 +17,6 @@ interface LatexRendererProps {
   showErrorInline?: boolean;
 }
 
-
 interface NativeLatexViewProps {
   latex: string;
   fontSize: number;
@@ -26,14 +25,12 @@ interface NativeLatexViewProps {
   onLatexError?: (event: { nativeEvent: { error: string } }) => void;
 }
 
-
 const NativeLatexView =
   Platform.OS === 'android'
     ? requireNativeComponent<NativeLatexViewProps>('NativeLatexView')
     : null;
 
 const validateLatex = (latex: string): string | null => {
-
   let braceCount = 0;
   for (const char of latex) {
     if (char === '{') braceCount++;
@@ -52,15 +49,20 @@ const validateLatex = (latex: string): string | null => {
     if (pattern.test(latex)) return msg;
   }
 
-  return null; 
+  return null;
 };
 
-
 const LatexRenderer: React.FC<LatexRendererProps> = memo(
-  ({ latex, fontSize = 20, textColor = '#000000', style, onError, showErrorInline = false }) => {
+  ({
+    latex,
+    fontSize = 20,
+    textColor = '#000000',
+    style,
+    onError,
+    showErrorInline = false,
+  }) => {
     const cleanLatex = React.useMemo(() => {
       let cleaned = latex.trim();
-
 
       if (cleaned.startsWith('\\[') && cleaned.endsWith('\\]')) {
         cleaned = cleaned.substring(2, cleaned.length - 2).trim();
@@ -81,18 +83,15 @@ const LatexRenderer: React.FC<LatexRendererProps> = memo(
       return cleaned;
     }, [latex]);
 
-
     const validationError = React.useMemo(() => {
       return validateLatex(cleanLatex);
     }, [cleanLatex]);
-
 
     React.useEffect(() => {
       if (validationError && onError) {
         onError(validationError);
       }
     }, [validationError, onError]);
-
 
     const handleNativeError = React.useCallback(
       (event: { nativeEvent: { error: string } }) => {
@@ -126,7 +125,10 @@ const LatexRenderer: React.FC<LatexRendererProps> = memo(
     // This ensures the view has space to render before native measure completes
     const minHeight = Math.ceil(fontSize * 2.5);
     // Estimate width based on latex content length - be more generous to prevent clipping
-    const estimatedWidth = Math.max(fontSize * 5, cleanLatex.length * fontSize * 0.7);
+    const estimatedWidth = Math.max(
+      fontSize * 5,
+      cleanLatex.length * fontSize * 0.7,
+    );
 
     return (
       <NativeLatexView

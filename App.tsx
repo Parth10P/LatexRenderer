@@ -8,9 +8,198 @@ import {
   StatusBar,
   useColorScheme,
   TouchableOpacity,
+  TextInput,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import LatexRenderer from './src/components/LatexRenderer';
 import PerformanceTestScreen from './src/components/PerformanceTestScreen';
+
+const PlaygroundScreen = ({ onBack }: { onBack: () => void }) => {
+  const [latexInput, setLatexInput] = useState(
+    '\\frac{a}{b} + \\sqrt{c^2 + d^2}',
+  );
+  const [renderedLatex, setRenderedLatex] = useState('');
+  const isDarkMode = useColorScheme() === 'dark';
+  const textColor = isDarkMode ? '#FFFFFF' : '#000000';
+  const backgroundColor = isDarkMode ? '#1a1a1a' : '#f5f5f5';
+  const cardBackgroundColor = isDarkMode ? '#2d2d2d' : '#ffffff';
+  const inputBackgroundColor = isDarkMode ? '#3d3d3d' : '#ffffff';
+
+  const handleRender = () => {
+    setRenderedLatex(latexInput);
+  };
+
+  const handleClear = () => {
+    setLatexInput('');
+    setRenderedLatex('');
+  };
+
+  const exampleFormulas = [
+    { label: 'Fraction', latex: '\\frac{a+b}{c-d}' },
+    { label: 'Square Root', latex: '\\sqrt{x^2 + y^2}' },
+    { label: 'Integral', latex: '\\int_0^\\infty e^{-x^2} dx' },
+    { label: 'Sum', latex: '\\sum_{i=1}^{n} i^2' },
+    {
+      label: 'Matrix',
+      latex: '\\begin{pmatrix} a & b \\\\ c & d \\end{pmatrix}',
+    },
+    { label: 'Limit', latex: '\\lim_{x \\to 0} \\frac{\\sin x}{x} = 1' },
+  ];
+
+  return (
+    <SafeAreaView style={[styles.container, { backgroundColor }]}>
+      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
+
+      <View style={[styles.header, { backgroundColor: cardBackgroundColor }]}>
+        <View style={styles.headerRow}>
+          <TouchableOpacity onPress={onBack} style={styles.backButton}>
+            <Text style={styles.backButtonText}>← Back</Text>
+          </TouchableOpacity>
+          <View style={styles.headerTextContainer}>
+            <Text style={[styles.title, { color: textColor }]}>
+              LaTeX Playground
+            </Text>
+            <Text
+              style={[styles.subtitle, { color: isDarkMode ? '#888' : '#666' }]}
+            >
+              Enter LaTeX and see the result
+            </Text>
+          </View>
+        </View>
+      </View>
+
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.playgroundContainer}
+      >
+        <ScrollView
+          style={styles.playgroundScroll}
+          contentContainerStyle={styles.playgroundScrollContent}
+          keyboardShouldPersistTaps="handled"
+        >
+
+          <View
+            style={[
+              styles.playgroundCard,
+              { backgroundColor: cardBackgroundColor },
+            ]}
+          >
+            <Text style={[styles.playgroundLabel, { color: textColor }]}>
+              Enter LaTeX Code:
+            </Text>
+            <TextInput
+              style={[
+                styles.latexInput,
+                {
+                  backgroundColor: inputBackgroundColor,
+                  color: textColor,
+                  borderColor: isDarkMode ? '#555' : '#ddd',
+                },
+              ]}
+              value={latexInput}
+              onChangeText={setLatexInput}
+              placeholder="Enter LaTeX here... e.g., \frac{a}{b}"
+              placeholderTextColor={isDarkMode ? '#888' : '#999'}
+              multiline
+              numberOfLines={4}
+              textAlignVertical="top"
+              autoCapitalize="none"
+              autoCorrect={false}
+            />
+
+            <View style={styles.buttonRow}>
+              <TouchableOpacity
+                style={[styles.renderButton, { backgroundColor: '#4a97e4ff' }]}
+                onPress={handleRender}
+              >
+                <Text style={styles.renderButtonText}>Render</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.clearButton, { backgroundColor: '#e44949ff' }]}
+                onPress={handleClear}
+              >
+                <Text style={styles.clearButtonText}>Clear</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          <View
+            style={[
+              styles.playgroundCard,
+              { backgroundColor: cardBackgroundColor },
+            ]}
+          >
+            <Text style={[styles.playgroundLabel, { color: textColor }]}>
+              Rendered Output:
+            </Text>
+            <View
+              style={[
+                styles.outputContainer,
+                {
+                  backgroundColor: isDarkMode ? '#1a1a1a' : '#fafafa',
+                  borderColor: isDarkMode ? '#555' : '#ddd',
+                },
+              ]}
+            >
+              {renderedLatex ? (
+                <LatexRenderer
+                  latex={renderedLatex}
+                  fontSize={50}
+                  textColor={textColor}
+                  style={styles.renderedLatex}
+                  showErrorInline={true}
+                />
+              ) : (
+                <Text
+                  style={[
+                    styles.placeholderText,
+                    { color: isDarkMode ? '#666' : '#999' },
+                  ]}
+                >
+                  Your rendered LaTeX will appear here...
+                </Text>
+              )}
+            </View>
+          </View>
+
+          <View
+            style={[
+              styles.playgroundCard,
+              { backgroundColor: cardBackgroundColor },
+            ]}
+          >
+            <Text style={[styles.playgroundLabel, { color: textColor }]}>
+              Quick Examples:
+            </Text>
+            <View style={styles.examplesGrid}>
+              {exampleFormulas.map((example, index) => (
+                <TouchableOpacity
+                  key={index}
+                  style={[
+                    styles.exampleButton,
+                    { backgroundColor: isDarkMode ? '#3d3d3d' : '#f0f0f0' },
+                  ]}
+                  onPress={() => {
+                    setLatexInput(example.latex);
+                    setRenderedLatex(example.latex);
+                  }}
+                >
+                  <Text
+                    style={[styles.exampleButtonText, { color: textColor }]}
+                  >
+                    {example.label}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
+  );
+};
 
 const TEST_CASES = [
   {
@@ -184,7 +373,6 @@ const ContentRenderer = ({
       {parts.map((part, index) => {
         if (part.type === 'latex') {
           const isDisplay = part.display;
-          // Use consistent large font size like PerformanceTestScreen
           const fontSize = isDisplay ? 45 : 40;
           return (
             <LatexRenderer
@@ -197,7 +385,6 @@ const ContentRenderer = ({
             />
           );
         } else {
-          // Text part
           return (
             <Text key={index} style={[styles.textItem, { color: textColor }]}>
               {part.content}
@@ -211,6 +398,7 @@ const ContentRenderer = ({
 
 const App = () => {
   const [showPerformanceTest, setShowPerformanceTest] = useState(false);
+  const [showPlayground, setShowPlayground] = useState(false);
   const isDarkMode = useColorScheme() === 'dark';
   const textColor = isDarkMode ? '#FFFFFF' : '#000000';
   const backgroundColor = isDarkMode ? '#1a1a1a' : '#f5f5f5';
@@ -220,6 +408,10 @@ const App = () => {
     return (
       <PerformanceTestScreen onBack={() => setShowPerformanceTest(false)} />
     );
+  }
+
+  if (showPlayground) {
+    return <PlaygroundScreen onBack={() => setShowPlayground(false)} />;
   }
 
   return (
@@ -237,12 +429,20 @@ const App = () => {
               Native View - All 15 Test Cases
             </Text>
           </View>
-          <TouchableOpacity
-            style={styles.performanceButton}
-            onPress={() => setShowPerformanceTest(true)}
-          >
-            <Text style={styles.performanceButtonText}>🚀 Test 50×</Text>
-          </TouchableOpacity>
+          <View style={styles.buttonGroup}>
+            <TouchableOpacity
+              style={styles.playgroundButton}
+              onPress={() => setShowPlayground(true)}
+            >
+              <Text style={styles.playgroundButtonText}> Playground</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.performanceButton}
+              onPress={() => setShowPerformanceTest(true)}
+            >
+              <Text style={styles.performanceButtonText}> Test 50×</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
       <FlatList
@@ -325,6 +525,21 @@ const styles = StyleSheet.create({
   headerTextContainer: {
     flex: 1,
   },
+  buttonGroup: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  playgroundButton: {
+    backgroundColor: '#34C759',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  playgroundButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
+  },
   performanceButton: {
     backgroundColor: '#007AFF',
     paddingHorizontal: 12,
@@ -349,8 +564,7 @@ const styles = StyleSheet.create({
   },
   item: {
     padding: 16,
-    paddingHorizontal: 10
-    ,
+    paddingHorizontal: 10,
   },
   errorItem: {
     borderLeftWidth: 4,
@@ -436,6 +650,133 @@ const styles = StyleSheet.create({
   separator: {
     height: 1,
     backgroundColor: '#e0e0e0',
+  },
+  backButton: {
+    paddingVertical: 8,
+    paddingRight: 16,
+  },
+  backButtonText: {
+    color: '#007AFF',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  playgroundContainer: {
+    flex: 1,
+  },
+  playgroundScroll: {
+    flex: 1,
+  },
+  playgroundScrollContent: {
+    padding: 16,
+    gap: 16,
+  },
+  playgroundCard: {
+    borderRadius: 12,
+    padding: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  playgroundLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 12,
+  },
+  latexInput: {
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+    fontFamily: 'monospace',
+    minHeight: 100,
+    textAlignVertical: 'top',
+  },
+  toggleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 12,
+    gap: 8,
+  },
+  toggleLabel: {
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  toggleButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: '#e0e0e0',
+  },
+  toggleButtonActive: {
+    backgroundColor: '#007AFF',
+  },
+  toggleButtonText: {
+    fontSize: 14,
+    color: '#666',
+  },
+  toggleButtonTextActive: {
+    color: '#FFFFFF',
+    fontWeight: '600',
+  },
+  buttonRow: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 16,
+  },
+  renderButton: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  renderButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  clearButton: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  clearButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  outputContainer: {
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: 20,
+    minHeight: 120,
+    justifyContent: 'center',
+    alignItems: 'flex-start',
+  },
+  renderedLatex: {
+    alignSelf: 'flex-start',
+  },
+  placeholderText: {
+    fontSize: 14,
+    fontStyle: 'italic',
+    textAlign: 'center',
+    width: '100%',
+  },
+  examplesGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  exampleButton: {
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 8,
+  },
+  exampleButtonText: {
+    fontSize: 13,
+    fontWeight: '500',
   },
 });
 
