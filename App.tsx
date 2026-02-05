@@ -375,9 +375,9 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     flexDirection: 'column',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     width: '100%',
-    paddingHorizontal: 16,
+    paddingHorizontal: 8,
   },
   text: {
     fontSize: 16,
@@ -386,24 +386,24 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   displayMath: {
-    alignSelf: 'center',
+    alignSelf: 'flex-start',
     marginVertical: 16,
     paddingVertical: 8,
     minHeight: 60,
   },
   wrapContainer: {
     flexDirection: 'column',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     width: '100%',
   },
   inlineMath: {
-    alignSelf: 'center',
+    alignSelf: 'flex-start',
     marginVertical: 12,
     paddingVertical: 8,
     minHeight: 50,
   },
   inlineMathItem: {
-    alignSelf: 'center',
+    alignSelf: 'flex-start',
     marginVertical: 10,
     minHeight: 40,
   },
@@ -411,8 +411,8 @@ const styles = StyleSheet.create({
     fontSize: 20,
     lineHeight: 34,
     color: '#000000',
-    textAlign: 'center',
-    paddingHorizontal: 8,
+    textAlign: 'left',
+    paddingHorizontal: 0,
   },
   codeContainer: {
     marginTop: 12,
