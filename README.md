@@ -464,16 +464,3 @@ LatexRenderer/
 
 ---
 
-## 👨‍💻 Author
-
-**Parth Patel**
-
-- GitHub: [@Parth10P](https://github.com/Parth10P)
-
----
-
-## 📄 License
-
-This project is created as an internship assignment.
-
----
