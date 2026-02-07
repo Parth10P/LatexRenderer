@@ -322,14 +322,6 @@ protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
 | **Horizontal Overflow** | Long equations require scrolling     | By design for usability                       |
 | **Render Timing**       | 100ms delay for reliability          | Could optimize with better lifecycle handling |
 
-### Future Improvements
-
-- [ ] iOS support using iosMath library
-- [ ] JSI implementation for better performance
-- [ ] Offline LaTeX command documentation
-- [ ] Copy LaTeX to clipboard feature
-- [ ] Export rendered equations as images
-
 ---
 
 ## 🛠️ Setup & Installation
